@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/go-ndn/log"
@@ -38,7 +39,7 @@ func newFace(network, address string, recv chan<- *ndn.Interest) (f *face, err e
 }
 
 func newRemoteFace(network, address string, recv chan<- *ndn.Interest) (f *face, err error) {
-	ln, err := packet.Listen(network, address)
+	ln, err := packet.Listen(network, "0.0.0.0:6364")
 	if err != nil {
 		return
 	}
@@ -46,6 +47,17 @@ func newRemoteFace(network, address string, recv chan<- *ndn.Interest) (f *face,
 	conn, err := ln.Accept()
 	if err != nil {
 		return
+	}
+	
+	raddr, err := net.ResolveUDPAddr("udp",address)
+	if err != nil {
+		return
+	}
+	
+	// send empty packet to initiate connection with multicast group
+	pconn := conn.(net.PacketConn)
+	if _,err := pconn.WriteTo([]byte(""),raddr); err != nil {
+		return nil, err
 	}
 	
 	f = &face{
