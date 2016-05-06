@@ -54,7 +54,7 @@ func main() {
 	defer local.Close()
 	// remote face
 	recv := make(chan *ndn.Interest)
-	remote, err := newRemoteFace(config.Remote.Network, config.Remote.Address, recv)
+	remote, err := newFace(config.Remote.Network, config.Remote.Address, recv)
 	if err != nil {
 		log.Fatalln(err)
 	}

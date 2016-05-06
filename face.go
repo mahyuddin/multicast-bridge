@@ -37,33 +37,6 @@ func newFace(network, address string, recv chan<- *ndn.Interest) (f *face, err e
 	return
 }
 
-func newRemoteFace(network, address string, recv chan<- *ndn.Interest) (f *face, err error) {
-	ln, err := packet.Listen(network, address)
-	if err != nil {
-		return
-	}
-	
-	conn, err := ln.Accept()
-	if err != nil {
-		return
-	}
-	
-	f = &face{
-		Face:    ndn.NewFace(conn, recv),
-		Fetcher: mux.NewFetcher(),
-	}
-	
-	f.Fetcher.Use(mux.Assembler)
-
-	if *flagDebug {
-		f.Logger = log.New(log.Stderr, fmt.Sprintf("[%s] ", conn.RemoteAddr()))
-	} else {
-		f.Logger = log.Discard
-	}
-	f.Println("face created")
-	return
-}
-
 func (f *face) register(name string, cost uint64) error {
 	f.Println("register", name)
 	return ndn.SendControl(f, "rib", "register", &ndn.Parameters{
